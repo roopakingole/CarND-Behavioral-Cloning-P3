@@ -3,11 +3,36 @@
 import cv2, os
 import numpy as np
 import matplotlib.image as mpimg
-
+import pandas as pd
+from random import random
 
 IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS = 160, 320, 3
 INPUT_SHAPE = (IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS)
+INPUT_SHAPE_CROP = (IMAGE_HEIGHT-60-25, IMAGE_WIDTH, IMAGE_CHANNELS)
+LOWER_IND = 60
+UPPER_IND = 135
 
+def remove_small_steering(data, thresh=0.05, drop_ratio=0.8):
+    index = data[abs(data['steering'])<thresh].index.tolist()
+    rows = [i for i in index if random() * drop_ratio]
+    data = data.drop(data.index[rows])
+    return data
+
+def crop_img(img):
+    return img[LOWER_IND:UPPER_IND,:]
+
+def crop(image):
+    """
+    Crop the image (removing the sky at the top and the car front at the bottom)
+    """
+    return image[60:-25, :, :] # remove the sky and the car front
+
+
+def resize(image):
+    """
+    Resize the image to the input shape used by the network model
+    """
+    return cv2.resize(image, (IMAGE_WIDTH, IMAGE_HEIGHT), cv2.INTER_AREA)
 
 def load_image(data_dir, image_file):
     """
@@ -27,6 +52,7 @@ def preprocess(image):
     """
     Combine all preprocess functions into one
     """
+    image = crop(image)
     image = rgb2yuv(image)
     return image
 
@@ -94,7 +120,7 @@ def batch_generator(data_dir, image_paths, steering_angles, batch_size, is_train
     """
     Generate training image give image paths and associated steering angles
     """
-    images = np.empty([batch_size, IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS])
+    images = np.empty([batch_size, IMAGE_HEIGHT-60-25, IMAGE_WIDTH, IMAGE_CHANNELS])
     steers = np.empty(batch_size)
     while True:
         i = 0

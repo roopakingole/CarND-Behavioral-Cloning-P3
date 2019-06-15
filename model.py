@@ -4,10 +4,11 @@ import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
 from keras.models import Sequential
+from keras.models import load_model
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
-from keras.layers import Lambda, Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Cropping2D
-from utils import INPUT_SHAPE, batch_generator
+from keras.layers import Lambda, Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Cropping2D, SpatialDropout2D
+from utils import INPUT_SHAPE, batch_generator, INPUT_SHAPE_CROP, remove_small_steering
 import argparse
 import os
 import matplotlib.pyplot as plt
@@ -18,8 +19,12 @@ def load_data(args):
     """
     Load training data and split it into training and validation set
     """
-    data_df = pd.read_csv(os.path.join(args.data_dir, 'driving_log.csv'))
-
+    data_df = pd.read_csv(os.path.join(args.data_dir, 'driving_log.csv'), index_col = False)
+    data_df.columns = ['center','left','right','steering','throttle','break','speed']
+    data_df = data_df.sample(n=len(data_df))
+    
+    data_df = remove_small_steering(data_df)
+    
     X = data_df[['center', 'left', 'right']].values
     y = data_df['steering'].values
 
@@ -28,12 +33,13 @@ def load_data(args):
     return X_train, X_valid, y_train, y_valid
 
 
-def build_model(args):
+
+def nvidia_model(args):
     """
     Modified NVIDIA model
     """
     model = Sequential()
-    model.add(Lambda(lambda x: x/127.5-1.0, input_shape=INPUT_SHAPE))
+    model.add(Lambda(lambda x: x/127.5-1.0))
     model.add(Cropping2D(cropping=((60,25),(0,0))))
     model.add(Conv2D(24, 5, 5, activation='elu', subsample=(2, 2)))
     model.add(Conv2D(36, 5, 5, activation='elu', subsample=(2, 2)))
@@ -45,6 +51,39 @@ def build_model(args):
     model.add(Dense(100, activation='elu'))
     model.add(Dense(50, activation='elu'))
     model.add(Dense(10, activation='elu'))
+    model.add(Dense(1))
+    model.summary()
+
+    return model
+
+def build_model(args):
+    def reshape_images(img):
+        import tensorflow as tf
+        img_out = img
+        return tf.image.resize_images(img_out, (66,200))
+    """
+    Modified NVIDIA model
+    """
+    model = Sequential()
+    model.add(Lambda(reshape_images, input_shape=INPUT_SHAPE_CROP))
+    model.add(Lambda(lambda x: x/127.5-1.0))
+   # model.add(Cropping2D(cropping=((60,25),(0,0))))
+    model.add(Conv2D(24, 5, 5, activation='relu', subsample=(2, 2)))
+    model.add(SpatialDropout2D(0.2))
+    model.add(Conv2D(36, 5, 5, activation='relu', subsample=(2, 2)))
+    model.add(SpatialDropout2D(0.2))
+    model.add(Conv2D(48, 5, 5, activation='relu', subsample=(2, 2)))
+    model.add(SpatialDropout2D(0.2))
+    model.add(Conv2D(64, 3, 3, activation='relu'))
+    model.add(SpatialDropout2D(0.2))
+    model.add(Conv2D(64, 3, 3, activation='relu'))
+    model.add(SpatialDropout2D(0.2))
+    model.add(Flatten())
+    model.add(Dense(1164, activation='relu'))
+    model.add(Dense(100, activation='relu'))
+    model.add(Dense(50, activation='relu'))
+    model.add(Dense(10, activation='relu'))
+    model.add(Dropout(args.keep_prob))
     model.add(Dense(1))
     model.summary()
 
@@ -122,7 +161,10 @@ def main():
     print('-' * 30)
 
     data = load_data(args)
+    #model = nvidia_model(args)
     model = build_model(args)
+    #model = load_model('model.h5')
+    
     history_object = train_model(model, args, *data)
     plot_training_history(history_object)
 
