@@ -190,7 +190,14 @@ I used an adam optimizer so that manually training the learning rate wasn't nece
 I ran the training on my workstation entirely using CPU with 24 cores.
 
 #### 5. Results
+#### Model output with `model-011-run1.h5`
+|Lake Test Track |
+|----------------|
+|[![Lake Track](images/lake_track.png)](https://youtu.be/2p3xS5VA6UQ)|
+|[YouTube Link](https://youtu.be/2p3xS5VA6UQ)|
 
+
+#### Model output with `model-008-run2.h5`
 |Lake Test Track | Jungle Track 1 | Jungle Track 2 |
 |----------------|----------------|----------------|
 |[![Lake Track](images/lake_track.png)](https://youtu.be/IwjCBzwH5Sw)|[![Jungle Track 1](images/jungle_track1.png)](https://youtu.be/elt_HRAArUY)|[![Jungle Track 2](images/jungle_track2.png)](https://youtu.be/4479pd7yYVg)|
