@@ -5,6 +5,7 @@ import numpy as np
 import matplotlib.image as mpimg
 import pandas as pd
 from random import random
+import matplotlib.pyplot as plt
 
 IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS = 160, 320, 3
 INPUT_SHAPE = (IMAGE_HEIGHT, IMAGE_WIDTH, IMAGE_CHANNELS)
@@ -104,6 +105,40 @@ def random_brightness(image):
     return cv2.cvtColor(hsv, cv2.COLOR_HSV2RGB)
 
 
+def image_augument_test(data_dir, image_file):
+    
+
+    fig,axes = plt.subplots(2, 3, figsize=(16, 7))
+    fig.tight_layout()
+
+    image = load_image(data_dir, image_file)
+    angle = 0
+
+    axes[0,0].imshow(image)
+    axes[0,0].set_title('Original Left, Angle=' + str(angle), fontsize=10)
+    
+    image, angle = random_flip(image, angle)
+    axes[0,1].imshow(image)
+    axes[0,1].set_title('Flip, Angle=' + str(angle), fontsize=10)
+    
+    image, angle = random_translate(image, angle, 100, 10)
+    axes[0,2].imshow(image)
+    axes[0,2].set_title('Transform, Angle=' + str(angle), fontsize=10)
+    
+    image = random_brightness(image)
+    axes[1,0].imshow(image)
+    axes[1,0].set_title('Brightness, Angle=' + str(angle), fontsize=10)
+    
+    image = crop(image)
+    axes[1,1].imshow(image)
+    axes[1,1].set_title('Crop, Angle=' + str(angle), fontsize=10)
+
+    image = rgb2yuv(image)
+    axes[1,2].imshow(image)
+    axes[1,2].set_title('RGB2YUV, Angle=' + str(angle), fontsize=10)
+
+    plt.show()
+    
 def augument(data_dir, center, left, right, steering_angle, range_x=100, range_y=10):
     """
     Generate an augumented image and adjust steering angle.

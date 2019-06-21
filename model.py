@@ -8,7 +8,7 @@ from keras.models import load_model
 from keras.optimizers import Adam
 from keras.callbacks import ModelCheckpoint
 from keras.layers import Lambda, Conv2D, MaxPooling2D, Dropout, Dense, Flatten, Cropping2D, SpatialDropout2D
-from utils import INPUT_SHAPE, batch_generator, INPUT_SHAPE_CROP, remove_small_steering
+from utils import INPUT_SHAPE, batch_generator, INPUT_SHAPE_CROP, remove_small_steering, image_augument_test
 import argparse
 import os
 import matplotlib.pyplot as plt
@@ -21,13 +21,17 @@ def load_data(args):
     """
     data_df = pd.read_csv(os.path.join(args.data_dir, 'driving_log.csv'), index_col = False)
     data_df.columns = ['center','left','right','steering','throttle','break','speed']
+    
+    """ Shuffle the data """
     data_df = data_df.sample(n=len(data_df))
     
+    """ remove very small steering angles from the dataset """
     data_df = remove_small_steering(data_df)
     
     X = data_df[['center', 'left', 'right']].values
     y = data_df['steering'].values
 
+    """ Split the dataset """
     X_train, X_valid, y_train, y_valid = train_test_split(X, y, test_size=args.test_size, random_state=0)
 
     return X_train, X_valid, y_train, y_valid
@@ -36,7 +40,7 @@ def load_data(args):
 
 def nvidia_model(args):
     """
-    Modified NVIDIA model
+    NVIDIA model
     """
     model = Sequential()
     model.add(Lambda(lambda x: x/127.5-1.0))
@@ -160,10 +164,13 @@ def main():
         print('{:<20} := {}'.format(key, value))
     print('-' * 30)
 
+    #image_augument_test('images','left.jpg')
+
     data = load_data(args)
     #model = nvidia_model(args)
     model = build_model(args)
-    #model = load_model('model.h5')
+    model = load_model('model.h5')
+    
     
     history_object = train_model(model, args, *data)
     plot_training_history(history_object)
