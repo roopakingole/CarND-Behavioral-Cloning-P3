@@ -193,5 +193,5 @@ I ran the training on my workstation entirely using CPU with 24 cores.
 
 |Lake Test Track | Jungle Track 1 | Jungle Track 2 |
 |----------------|----------------|----------------|
-|[![Lake Track](images/lake_track.png)](https://youtu.be/IwjCBzwH5Sw)|[![Jungle Track 1](images/jungle_track.png)](https://youtu.be/elt_HRAArUY)|[![Jungle Track 2](images/jungle_track.png)](https://youtu.be/4479pd7yYVg)|
+|[![Lake Track](images/lake_track.png)](https://youtu.be/IwjCBzwH5Sw)|[![Jungle Track 1](images/jungle_track1.png)](https://youtu.be/elt_HRAArUY)|[![Jungle Track 2](images/jungle_track2.png)](https://youtu.be/4479pd7yYVg)|
 |[YouTube Link](https://youtu.be/IwjCBzwH5Sw)|[YouTube Link](https://youtu.be/elt_HRAArUY)|[YouTube Link](https://youtu.be/4479pd7yYVg)|
